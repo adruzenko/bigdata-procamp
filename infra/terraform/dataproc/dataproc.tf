@@ -55,7 +55,7 @@ resource "google_dataproc_cluster" "procamp_cluster" {
     }
 
     gce_cluster_config {
-      zone = "${var.zone}"
+      zone = var.zone
 
       metadata = {
         "enable-oslogin" : true,

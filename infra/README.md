@@ -17,17 +17,6 @@ You can find more details about GCP free programs on [GCP web site](https://clou
 
 Folllow the instructions to register Google Cloud account and activate [free trial](https://cloud.google.com/free/).
 
-## Create Google Cloud Project
-
-To create a new project:
-
-1. Go to the [Manage resources page](https://console.cloud.google.com/cloud-resource-manager) in the Cloud Console.
-2. Click Create Project.
-In the New Project window that appears, enter a `bigdata-procamp` as a project name.
-3. Leave `No organization` as a location for your project.
-
-When you're finished entering new project details, click Create.
-
 ### Google Cloud Shell
 
 This guide uses Google Cloud Shell to give you an environment preconfigured with Terraform. You can run commands at the command prompt, and edit the files in the editor window.
@@ -58,19 +47,105 @@ After you install Cloud SDK, the next step is to run the `gcloud init` command t
 
 ## Create Google Cloud Project
 
-### Setup the environment
-
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fadruzenko%2Fbigdata-procamp&cloudshell_git_branch=infra&cloudshell_open_in_editor=terraform%2Fdataproc%2Fdataproc.tf&cloudshell_working_dir=infra&cloudshell_tutorial=README.md)
 
-1. Set your billing account id
+1. Configure the environment for Terraform
+
+```sh
+[[ $CLOUD_SHELL ]] || gcloud auth application-default login
+```
+
+2. Set your billing account id
 
 Lookup you billing account id:
 ```sh
-$ gcloud beta billing accounts list
+gcloud beta billing accounts list
 ```
 
 Export Billing Account ID as environment variable, replace `YOUR_ACCOUNT_ID` with your billing account id from the output of the previous command (ex. `02221D-02221E-82221C`).
 
 ```sh
 export TF_VAR_billing_account=YOUR_ACCOUNT_ID
+```
+
+3. Navigate to terraform `project` folder and run terraform
+
+```sh
+cd terraform/project
+terraform init
+terraform apply
+```
+
+4. Write down project_id output variable
+
+Terraform CLI prints outputs variables of created resources. Example: 
+```
+Outputs:
+project_id = bigdata-procamp-d88877aa
+tfstate_bucket = tf-state-bucket-123b55b12345679e
+```
+Write down `project_id` and `tfstate_bucket` variables for further usage during Dataproc and Composer clusters setup.
+
+### Create Dataproc cluster
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fadruzenko%2Fbigdata-procamp&cloudshell_git_branch=infra&cloudshell_open_in_editor=terraform%2Fdataproc%2Fdataproc.tf&cloudshell_working_dir=infra&cloudshell_tutorial=README.md)
+
+1. Navigate to terraform `dataproc` folder
+
+```sh
+cd terraform/dataproc
+```
+
+2. Configure the environment for Terraform, replace `YOUR_PROJECT` with your project ID::
+
+```sh
+[[ $CLOUD_SHELL ]] || gcloud auth application-default login
+
+export PROJECT=YOUR_PROJECT
+export TF_VAR_project=${PROJECT}
+gcloud config set project ${PROJECT}
+```
+
+3. Initialize Terraform backend, replace `TFSTATE_BUCKET` with `tfstate_bucket` variable value from project creation output.
+
+```sh
+terraform init -backend-config="bucket=TFSTATE_BUCKET"
+```
+
+4. Run terraform
+
+```sh
+terraform apply
+```
+
+### Create Composer cluster
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fadruzenko%2Fbigdata-procamp&cloudshell_git_branch=infra&cloudshell_open_in_editor=terraform%2Fdataproc%2Fdataproc.tf&cloudshell_working_dir=infra&cloudshell_tutorial=README.md)
+
+1. Navigate to terraform `composer` folder
+
+```sh
+cd terraform/composer
+```
+
+2. Configure the environment for Terraform, replace `YOUR_PROJECT` with your project ID::
+
+```sh
+[[ $CLOUD_SHELL ]] || gcloud auth application-default login
+
+export PROJECT=YOUR_PROJECT
+export TF_VAR_project=${PROJECT}
+gcloud config set project ${PROJECT}
+```
+
+3. Initialize Terraform backend, replace `TFSTATE_BUCKET` with `tfstate_bucket` variable value from project creation output.
+
+```sh
+terraform init -backend-config="bucket=TFSTATE_BUCKET"
+```
+
+4. Run terraform
+
+```sh
+terraform apply
 ```
