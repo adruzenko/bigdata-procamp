@@ -27,3 +27,7 @@ resource "google_project_service" "project" {
 
   disable_on_destroy = false
 }
+
+output "project_id" {
+  value = google_project.project.project_id
+}
