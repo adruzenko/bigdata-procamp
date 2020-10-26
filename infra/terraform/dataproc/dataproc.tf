@@ -89,9 +89,5 @@ resource "google_dataproc_cluster" "procamp_cluster" {
     endpoint_config {
       enable_http_port_access = true
     }
-
-    lifecycle_config {
-      idle_delete_ttl = "36000s"
-    }
   }
 }
